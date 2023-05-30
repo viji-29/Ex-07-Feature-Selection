@@ -90,16 +90,10 @@ print(df_new)
 
 # OUTPUT FOR TITANIC
 
-![GITHUB](d7.1.PNG)
-![GITHUB](d7.2.PNG)
-![GITHUB](d7.3.PNG)
-![GITHUB](d7.4.PNG)
 
 # OUTPUT FOR CARPRICE
 
-![GITHUB](d7.5.PNG)
-![GITHUB](d7.6.PNG)
-![GITHUB](d7.8.PNG)
+
 
 # RESULT:
 Thus, the various feature selection techniques have been performed on a given dataset successfully.
