@@ -18,63 +18,88 @@ Save the data to the file
 
 
 # CODE
+# PROGRAM FOR TITANIC
 
-from sklearn.datasets import load_boston boston_data=load_boston() import pandas as pd boston = pd.DataFrame(boston_data.data, columns=boston_data.feature_names) boston['MEDV'] = boston_data.target dummies = pd.get_dummies(boston.RAD) boston = boston.drop(columns='RAD').merge(dummies,left_index=True,right_index=True) X = boston.drop(columns='MEDV') y = boston.MEDV boston.head(10)
+import pandas as pd
+import numpy as np
+df = pd.read_csv("titanic_dataset.csv")
+df
+df.isnull().sum()
+from sklearn.preprocessing import LabelEncoder
+from sklearn.impute import SimpleImputer
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import chi2
+df.drop(['PassengerId', 'Name', 'Ticket', 'Cabin'], axis=1, inplace=True)
+le = LabelEncoder()
+df['Sex'] = le.fit_transform(df['Sex'])
+df['Embarked'] = le.fit_transform(df['Embarked'].astype(str))
+imputer = SimpleImputer(missing_values=np.nan, strategy='median')
+df[['Age']] = imputer.fit_transform(df[['Age']])
+print("Feature selection")
+X = df.iloc[:, :-1]
+y = df.iloc[:, -1]
+selector = SelectKBest(chi2, k=3)
+X_new = selector.fit_transform(X, y)
+print(X_new)
+df_new = pd.DataFrame(X_new, columns=['Pclass', 'Age', 'Fare'])
+df_new['Survived'] = y.values
+df_new.to_csv('titanic_transformed.csv', index=False)
+print(df_new)
 
-from sklearn.preprocessing import StandardScaler from sklearn.pipeline import make_pipeline from sklearn.model_selection import KFold from sklearn.neighbors import KNeighborsRegressor from sklearn.metrics import mean_squared_error, r2_score from sklearn.model_selection import cross_val_predict from sklearn.linear_model import LinearRegression from math import sqrt
+# PROGRAM FOR CARPRICE
 
-cv = KFold(n_splits=10, random_state=None, shuffle=False) classifier_pipeline = make_pipeline(StandardScaler(), KNeighborsRegressor(n_neighbors=10)) y_pred = cross_val_predict(classifier_pipeline, X, y, cv=cv) print("RMSE: " + str(round(sqrt(mean_squared_error(y,y_pred)),2))) print("R_squared: " + str(round(r2_score(y,y_pred),2)))
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+df = pd.read_csv("CarPrice.csv")
+df
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.feature_selection import SelectKBest, f_regression
+from sklearn.ensemble import ExtraTreesRegressor
+df = df.drop(['car_ID', 'CarName'], axis=1)
+le = LabelEncoder()
+df['fueltype'] = le.fit_transform(df['fueltype'])
+df['aspiration'] = le.fit_transform(df['aspiration'])
+df['doornumber'] = le.fit_transform(df['doornumber'])
+df['carbody'] = le.fit_transform(df['carbody'])
+df['drivewheel'] = le.fit_transform(df['drivewheel'])
+df['enginelocation'] = le.fit_transform(df['enginelocation'])
+df['enginetype'] = le.fit_transform(df['enginetype'])
+df['cylindernumber'] = le.fit_transform(df['cylindernumber'])
+df['fuelsystem'] = le.fit_transform(df['fuelsystem'])
+X = df.iloc[:, :-1]
+y = df.iloc[:, -1]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2,
+random_state=1)
+print("Univariate Selection")
+selector = SelectKBest(score_func=f_regression, k=10)
+X_train_new = selector.fit_transform(X_train, y_train)
+mask = selector.get_support()
+selected_features = X_train.columns[mask]
+model = ExtraTreesRegressor()
+model.fit(X_train, y_train)
+importance = model.feature_importances_
+indices = np.argsort(importance)[::-1]
+selected_features = X_train.columns[indices][:10]
+df_new = pd.concat([X_train[selected_features], y_train], axis=1)
+df_new.to_csv('CarPrice_new.csv', index=False)
+print(df_new)
 
-boston.var()
+# OUTPUT
 
-X = X.drop(columns = ['NOX','CHAS']) y_pred = cross_val_predict(classifier_pipeline, X, y, cv=cv) print("RMSE: " + str(round(sqrt(mean_squared_error(y,y_pred)),2))) print("R_squared: " + str(round(r2_score(y,y_pred),2)))
+# OUTPUT FOR TITANIC
 
-Filter Features by Correlation
+![GITHUB](d7.1.PNG)
+![GITHUB](d7.2.PNG)
+![GITHUB](d7.3.PNG)
+![GITHUB](d7.4.PNG)
 
-import seaborn as sn import matplotlib.pyplot as plt fig_dims = (12, 8) fig, ax = plt.subplots(figsize=fig_dims) sn.heatmap(boston.corr(), ax=ax) plt.show() abs(boston.corr()["MEDV"]) abs(boston.corr()["MEDV"][abs(boston.corr()["MEDV"])>0.5].drop('MEDV')).index.tolist() vals = [0.1,0.2,0.3,0.4,0.5,0.6,0.7] for val in vals: features = abs(boston.corr()["MEDV"][abs(boston.corr()["MEDV"])>val].drop('MEDV')).index.tolist()
+# OUTPUT FOR CARPRICE
 
-X = boston.drop(columns='MEDV')
-X=X[features]
+![GITHUB](d7.5.PNG)
+![GITHUB](d7.6.PNG)
+![GITHUB](d7.8.PNG)
 
-print(features)
-
-y_pred = cross_val_predict(classifier_pipeline, X, y, cv=cv)
-print("RMSE: " + str(round(sqrt(mean_squared_error(y,y_pred)),2)))
-print("R_squared: " + str(round(r2_score(y,y_pred),2)))
-
-Feature Selection Using a Wrapper
-
-boston = pd.DataFrame(boston_data.data, columns=boston_data.feature_names) boston['MEDV'] = boston_data.target boston['RAD'] = boston['RAD'].astype('category') dummies = pd.get_dummies(boston.RAD) boston = boston.drop(columns='RAD').merge(dummies,left_index=True,right_index=True) X = boston.drop(columns='MEDV') y = boston.MEDV
-
-from mlxtend.feature_selection import SequentialFeatureSelector as SFS
-
-sfs1 = SFS(classifier_pipeline, k_features=1, forward=False, scoring='neg_mean_squared_error', cv=cv)
-
-X = boston.drop(columns='MEDV') sfs1.fit(X,y) sfs1.subsets_
-
-X = boston.drop(columns='MEDV')[['CRIM','RM','PTRATIO','LSTAT']] y = boston['MEDV'] y_pred = cross_val_predict(classifier_pipeline, X, y, cv=cv) print("RMSE: " + str(round(sqrt(mean_squared_error(y,y_pred)),3))) print("R_squared: " + str(round(r2_score(y,y_pred),3)))
-
-boston[['CRIM','RM','PTRATIO','LSTAT','MEDV']].corr()
-
-boston['RM*LSTAT']=boston['RM']*boston['LSTAT']
-
-X = boston.drop(columns='MEDV')[['CRIM','RM','PTRATIO','LSTAT']] y = boston['MEDV'] y_pred = cross_val_predict(classifier_pipeline, X, y, cv=cv) print("RMSE: " + str(round(sqrt(mean_squared_error(y,y_pred)),3))) print("R_squared: " + str(round(r2_score(y,y_pred),3)))
-
-sn.pairplot(boston[['CRIM','RM','PTRATIO','LSTAT','MEDV']])
-
-boston = boston.drop(boston[boston['MEDV']==boston['MEDV'].max()].index.tolist())
-
-X = boston.drop(columns='MEDV')[['CRIM','RM','PTRATIO','LSTAT','RM*LSTAT']] y = boston['MEDV'] y_pred = cross_val_predict(classifier_pipeline, X, y, cv=cv) print("RMSE: " + str(round(sqrt(mean_squared_error(y,y_pred)),3))) print("R_squared: " + str(round(r2_score(y,y_pred),3)))
-
-boston['LSTAT_2']=boston['LSTAT']**2
-
-X = boston.drop(columns='MEDV')[['CRIM','RM','PTRATIO','LSTAT']] y_pred = cross_val_predict(classifier_pipeline, X, y, cv=cv) print("RMSE: " + str(round(sqrt(mean_squared_error(y,y_pred)),3))) print("R_squared: " + str(round(r2_score(y,y_pred),3)))
-
-# OUPUT
-![image](https://user-images.githubusercontent.com/123433226/234253036-72a3b98e-9342-469a-a4d6-5c6741106834.png)
-
-![image](https://user-images.githubusercontent.com/123433226/234253088-7ba4ab91-947b-48ce-a109-10665511c6ba.png)
-
-![image](https://user-images.githubusercontent.com/123433226/234253174-0e697afa-956d-4202-9f0d-34580c7ccc0a.png)
-
-![image](https://user-images.githubusercontent.com/123433226/234253224-b685359a-7fee-45df-924d-2539226478b4.png)
+# RESULT:
+Thus, the various feature selection techniques have been performed on a given dataset successfully.
