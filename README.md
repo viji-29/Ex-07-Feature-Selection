@@ -88,12 +88,10 @@ print(df_new)
 
 # OUTPUT
 
-# OUTPUT FOR TITANIC
-
-
-# OUTPUT FOR CARPRICE
-
-
+![image](https://user-images.githubusercontent.com/123433226/234253036-72a3b98e-9342-469a-a4d6-5c6741106834.png)
+![image](https://user-images.githubusercontent.com/123433226/234253088-7ba4ab91-947b-48ce-a109-10665511c6ba.png)
+![image](https://user-images.githubusercontent.com/123433226/234253174-0e697afa-956d-4202-9f0d-34580c7ccc0a.png)
+![image](https://user-images.githubusercontent.com/123433226/234253224-b685359a-7fee-45df-924d-2539226478b4.png)
 
 # RESULT:
 Thus, the various feature selection techniques have been performed on a given dataset successfully.
